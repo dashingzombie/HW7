@@ -46,10 +46,23 @@ class QLearning(AbstractSolver):
 
         # Reset the environment
         state = self.env.reset()
+        policy = self.create_greedy_policy()
 
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        for step in range(self.options.steps):
+            action = self.epsilon_greedy_action(state)
+            print(action)
+            next_state, reward, done, _ = self.step(action)
+            best_next_action = policy(next_state)
+            self.Q[state][action] = self.options.alpha * (reward + self.options.gamma * self.Q[next_state][best_next_action]) +(1-self.options.alpha) *(self.Q[state][action])
+
+            state = next_state
+
+            if done:
+                break
+            
 
 
     def __str__(self):
@@ -90,7 +103,20 @@ class QLearning(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
-        return action_probs
+        # action_probs = np.ones(self.env.action_space.n) * (self.options.epsilon / self.env.action_space.n)
+
+        #     # Choose the action with the highest Q-value
+        # best_action = np.argmax(self.Q[state])
+
+        # # Exploitation: assign higher probability to the best action
+        # action_probs[best_action] += 1.0 - self.options.epsilon
+
+        # return action_probs
+        if np.random.rand() < self.options.epsilon:
+            return np.random.choice(self.env.action_space.n) 
+        
+        return self.create_greedy_policy()(state)
+     
 
 
 class Estimator:

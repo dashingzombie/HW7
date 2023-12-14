@@ -60,16 +60,19 @@ class ValueIteration(AbstractSolver):
         """
 
         # you can add variables here if it is helpful
-
-        # Update the estimated value of each state
+        policy = self.create_greedy_policy()
+     
         for each_state in range(self.env.nS):
+            
+            expected_return = 0.0
+            action = policy(each_state)
+            for prob, next_state, reward, done in self.env.P[each_state][action]:
+                expected_return += prob * (reward + self.options.gamma * self.V[next_state])
+            self.V[each_state] = expected_return
 
-            ###################################################
-            #            Compute self.V here                  #
-            # Do a one-step lookahead to find the best action #
-            #           YOUR IMPLEMENTATION HERE              #
-            ###################################################
-            raise NotImplementedError
+            
+            
+            
 
         # Dont worry about this part
         self.statistics[Statistics.Rewards.value] = np.sum(self.V)
@@ -104,7 +107,13 @@ class ValueIteration(AbstractSolver):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
-            raise NotImplementedError
+            action_values = [sum(prob * (reward + self.options.gamma * self.V[next_state])
+                                 for prob, next_state, reward, _ in self.env.P[state][action])
+                             for action in range(self.env.nA)]
+
+            greedy_action = np.argmax(action_values)
+
+            return greedy_action
 
         return policy_fn
 
